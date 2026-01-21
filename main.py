@@ -17,7 +17,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
 from sklearn.pipeline import Pipeline
 
-# Try importing NLP tools
 try:
     from nltk.stem import PorterStemmer, WordNetLemmatizer
     import nltk
@@ -56,7 +55,7 @@ def ensure_dataset(path: Path) -> None:
     df_local.to_csv(path, index=False, encoding="utf-8")
 
 
-# Load Dataset
+# Thisis where the dataset was loaded
 ensure_dataset(DATASET_PATH)
 df = pd.read_csv(DATASET_PATH)
 df = df[['v1', 'v2']]
@@ -81,18 +80,18 @@ def clean_text(text: str, mode="stem"):
     return " ".join(tokens)
 
 
-#Prepare Variants of Cleaned Text
+# I attempted to prepare clean texts as variables for ease of use and understanding
 df["clean_stem"] = df["text"].apply(lambda t: clean_text(t, "stem"))
 df["clean_lemma"] = df["text"].apply(lambda t: clean_text(t, "lemma"))
 
-X = df["clean_lemma"]  # default best practice
+X = df["clean_lemma"]  
 y = df["label"]
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, stratify=y, random_state=42
 )
 
-# Model Pipelines and Parameter Grids
+# Training using Model Pipelines & Parameter Grids
 pipelines = {
     "tfidf_lr": Pipeline([
         ("vec", TfidfVectorizer()),
@@ -126,7 +125,7 @@ param_grids = {
     }
 }
 
-# Grid Search for Tuning of Hyperparameters
+# I used GridSearchCV for training as well and returned a success
 print("\n===== Running GridSearchCV =====")
 
 best_models = {}
@@ -137,8 +136,8 @@ for name in pipelines:
         pipelines[name],
         param_grids[name],
         cv=5,
-        scoring="f1",   # More focus on spam detection quality
-        n_jobs=1        # Use of a single core in order to avoid psutil issues
+        scoring="f1",   
+        n_jobs=1        
     )
     gs.fit(X_train, y_train)
 
@@ -147,7 +146,7 @@ for name in pipelines:
 
     best_models[name] = gs.best_estimator_
 
-# Proper Evaluation on Test Set
+# After that came the final test set evaluation
 print("\n===== Final Test Set Evaluation =====")
 
 for name, model in best_models.items():
@@ -156,7 +155,7 @@ for name, model in best_models.items():
     print(classification_report(y_test, preds))
     print("Confusion matrix:\n", confusion_matrix(y_test, preds))
 
-# Try to Pick The Best Model 
+# Trial to select the best model based on F1-score
 best_name = max(
     best_models.keys(),
     key=lambda k: classification_report(
@@ -166,10 +165,10 @@ best_name = max(
 
 best_model = best_models[best_name]
 
-# Avoidance of unicode issues in some environments
+
 print("\nBest model selected:", best_name)
 
-# Error Analysis 
+# It was also important for me to include an error analysis system
 print("\n===== Error Analysis (some misclassified messages) =====")
 
 preds = best_model.predict(X_test)
@@ -183,7 +182,7 @@ else:
         print("TRUE:", y_test.loc[i], "PRED:", preds[list(X_test.index).index(i)])
         print("-" * 80)
 
-#  Confusion Matrix Plot for Visual Aid
+#  Confusion Matrix Plot
 cm = confusion_matrix(y_test, best_model.predict(X_test))
 plt.imshow(cm, interpolation="nearest", cmap="Blues")
 for (i, j), v in np.ndenumerate(cm):
@@ -193,13 +192,13 @@ plt.xlabel("Predicted")
 plt.ylabel("Actual")
 plt.show()
 
-# Predict New Messages
+# Predicition Function of any new messages that may arrive
 def predict_message(msg):
     msg = clean_text(msg, "lemma")
     pred = best_model.predict([msg])[0]
     return "SPAM" if pred == 1 else "HAM"
 
-# Learning Curve Experiment
+
 print("\n===== Learning Curve Experiment =====")
 
 def run_learning_curve_experiment(X_train, y_train, X_test, y_test, sizes=[0.1, 0.3, 0.5, 1.0]):
@@ -219,15 +218,14 @@ def run_learning_curve_experiment(X_train, y_train, X_test, y_test, sizes=[0.1, 
     """
     results = []
     
-    # Create pipeline with Logistic Regression and TF-IDF
-    # Using similar setup to tfidf_lr but with default parameters for consistency
+    # Towards the end, I could properly create a pipeline with the use of Logistic Regression and TF-IDF
     pipeline = Pipeline([
         ("vec", TfidfVectorizer(ngram_range=(1, 2), min_df=2)),
         ("clf", LogisticRegression(max_iter=2000, C=1.0))
     ])
     
     for size in sizes:
-        # Calculate number of samples
+        # Calculate actual number of samples
         n_samples = int(len(X_train) * size)
         
         # Use stratified sampling to get subset
@@ -262,7 +260,7 @@ def run_learning_curve_experiment(X_train, y_train, X_test, y_test, sizes=[0.1, 
 # Run learning curve experiment
 learning_curve_results = run_learning_curve_experiment(X_train, y_train, X_test, y_test)
 
-# Save results to CSV
+# All the results are programmed to save as a CSV file 
 results_csv_path = PROJECT_DIR / "learning_curve_results.csv"
 learning_curve_results.to_csv(results_csv_path, index=False)
 print(f"\nResults saved to: {results_csv_path}")
@@ -277,7 +275,7 @@ plt.title('Learning Curve: Logistic Regression F1-Score vs Dataset Size', fontsi
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 
-# Save plot
+
 plot_path = PROJECT_DIR / "learning_curve_plot.png"
 plt.savefig(plot_path, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {plot_path}")
