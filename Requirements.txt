@@ -1,0 +1,6 @@
+The following need to be pre-installed for main.py to run:
+numpy
+pandas
+scikit-learn
+matplotlib
+nltk
