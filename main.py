@@ -33,7 +33,7 @@ except Exception:
 PROJECT_DIR = Path(__file__).resolve().parent
 DATASET_PATH = PROJECT_DIR / "spam.csv"
 
-
+# Load and prepare the dataset
 def ensure_dataset(path: Path) -> None:
     if path.exists():
         return
@@ -116,7 +116,7 @@ def build_search_space() -> tuple[dict[str, Pipeline], dict[str, dict]]:
 
     return pipelines, param_grids
 
-
+# Using GridSearchCV to tune realhyperparameters
 def tune_models(
     pipelines: dict[str, Pipeline],
     param_grids: dict[str, dict],
@@ -142,7 +142,7 @@ def tune_models(
 
     return best_models
 
-
+# Using the F1-Score to pick and utilize the best model
 def pick_best_model(best_models: dict[str, Pipeline], X_test: pd.Series, y_test: pd.Series) -> str:
     def f1_for(model: Pipeline) -> float:
         report = classification_report(y_test, model.predict(X_test), output_dict=True)
@@ -170,7 +170,7 @@ def show_confusion_matrix(best_name: str, model: Pipeline, X_test: pd.Series, y_
     plt.ylabel("Actual")
     plt.show()
 
-
+# Create error analysis for any users to understand misclassifications
 def error_analysis(
     df: pd.DataFrame,
     best_model: Pipeline,
@@ -246,7 +246,7 @@ def run_learning_curve_experiment(
 
     return pd.DataFrame(results)
 
-
+# Plotting a learning curve to show the results visually
 def plot_learning_curve(results: pd.DataFrame, *, output_path: Path) -> None:
     plt.figure(figsize=(10, 6))
     plt.plot(
@@ -307,6 +307,6 @@ def main() -> None:
     print(predict_message("Congratulations! You have won a free iPhone. Click here!", model=best_model))
     print(predict_message("Hey, so are we meeting tomorrow at 5?", model=best_model))
 
-
+# RUn the actual code to present its functionality
 if __name__ == "__main__":
     main()
