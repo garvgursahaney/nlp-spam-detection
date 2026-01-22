@@ -1,3 +1,5 @@
+#NLP Spam Detection Model by Garv Gursahaney
+#The program is built up on features such as model training, hyperparameter tuning, error analysis, learning curve experiments, and visualization.
 import pandas as pd
 import numpy as np
 import re
@@ -168,7 +170,7 @@ best_model = best_models[best_name]
 
 print("\nBest model selected:", best_name)
 
-# It was also important for me to include an error analysis system
+# Implementing an Error Analysis Secton to see any messages that were misclassified
 print("\n===== Error Analysis (some misclassified messages) =====")
 
 preds = best_model.predict(X_test)
